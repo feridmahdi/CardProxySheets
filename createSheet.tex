@@ -1,0 +1,41 @@
+\documentclass[a4paper]{article}
+\usepackage{geometry}
+\geometry{lmargin=6mm,rmargin=6mm,tmargin=7mm,bmargin=7mm}
+\usepackage{ifthen}
+\usepackage{graphicx}
+
+% SOURCE: https://tex.stackexchange.com/questions/53458/inserting-figures-using-loops/53645#53645
+% COMPILE with pdflatex -shell-escape filename.tex  instead of -synctex=1 -interaction=nonstopmode
+%pdflatex -shell-escape .\createSheet.tex
+
+\edef\subdir{"images/"}
+\graphicspath{{\subdir}}
+\immediate\write18{cmd /c dir /b \subdir\space *.png > imagelist.txt}
+
+\newcounter{cnt}
+\setcounter{cnt}{1}
+
+\begin{document}
+\pagenumbering{gobble}
+\makeatletter
+\newread\reader
+\openin\reader=imagelist.txt\relax
+\begingroup
+\endlinechar=-1\relax
+\loop
+	\readline\reader to \data
+    \unless\ifeof\reader
+            \filename@parse{\data}  
+            \includegraphics[width=64mm,height=88mm,keepaspectratio,ext=.\filename@ext]{"\filename@base"} %Original x=63mm, y=87mm
+	\ifthenelse{ \equal {\arabic{cnt}}{3}} {	%Uses /par after every third card
+	\vspace{4pt}\par %\endgraf
+	\setcounter{cnt}{1}
+	} {	% The first two cards are added without /par, but with \hspace
+	\hspace*{4pt}
+	\addtocounter{cnt}{1}
+	}
+\repeat
+\endgroup
+\closein\reader
+\makeatother
+\end{document}
